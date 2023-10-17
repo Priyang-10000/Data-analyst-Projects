@@ -1,5 +1,5 @@
 # Data-analyst-Projects
-The repositiory contains the codes for all my projects and links to my interactive visualizations to my projects
+This repositiory contains the R codes for all my projects, datasets for them(datasets 1st chunk.zip and datasets 2nd chunk.zip) and links to my interactive visualizations on Tablueau.
 
 Tableau Links
 
