@@ -1,0 +1,87 @@
+#SARIMA Model to forecast the product sales of a business
+
+# Constructed a SARIMA modelto predictfuture product sales for a  company.
+# Presented the forecasting results through static visualizations.
+
+#R Code:
+
+# Load necessary libraries
+library(dplyr)
+library(lubridate)
+library(forecast)
+library(zoo)
+
+# Load datasets
+train<-read.csv("train.csv file-path")
+holidays_events<-read.csv("/holidays_events.csv file-path")
+transactions<-read.csv("/transactions.csv file-path")
+stores<-read.csv("stores.csv file-path")
+
+# Merge datasets
+merged_data <- train %>%
+  left_join(transactions, by = c("date", "store_nbr")) %>%
+  left_join(stores, by = "store_nbr") %>%
+  left_join(holidays_events, by = "date")
+
+# Handle missing values
+merged_data$transactions <- zoo::na.locf(merged_data$transactions, na.rm = FALSE)
+
+# Extract time-related features
+merged_data$date <- as.Date(merged_data$date)
+merged_data$day_of_week <- weekdays(merged_data$date)
+merged_data$month <- month(merged_data$date)
+merged_data$year <- year(merged_data$date)
+merged_data$is_holiday <- ifelse(!is.na(merged_data$type.y), 1, 0)
+
+# Aggregated sales data
+aggregated_sales <- merged_data %>%
+  group_by(date) %>%
+  summarize(total_sales = sum(sales, na.rm = TRUE))
+
+# Split data into training and test sets (80-20 split)
+split_index <- floor(0.8 * nrow(aggregated_sales))
+train_data <- aggregated_sales[1:split_index, ]
+test_data <- aggregated_sales[(split_index + 1):nrow(aggregated_sales), ]
+
+# SARIMA model
+best_model <- auto.arima(train_data$total_sales, seasonal = TRUE, stepwise = FALSE, approximation = FALSE)
+
+# Forecasting
+forecast_results <- forecast(best_model, h = nrow(test_data))
+
+# Plot the forecast along with the actual training data
+ 
+plot(forecast_results)
+lines(test_data$total_sales, col = "red")
+legend("topright", legend=c("Forecast", "Actual"), col=c("blue","red"), lty=1)
+
+# Time Series Plot (Trend in sales over time)
+ggplot(merged_data, aes(x = date, y = sales)) +
+  geom_line() +
+  labs(title = "Time Series Plot of Sales", x = "Date", y = "Sales") +
+  theme_minimal()
+
+# Year-over-Year Comparison (Compare sales performance across different years)
+
+ggplot(merged_data, aes(x = month(date, label = TRUE), y = sales, color = as.factor(year(date)))) +
+  geom_line() +
+  labs(title = "Year-over-Year Sales Comparison", x = "Month", y = "Sales") +
+  theme_minimal()
+
+#Heatmaps (Visualize daily sales patterns)
+merged_data$weekday <- weekdays(merged_data$date)
+sales_heatmap <- merged_data %>%
+  group_by(weekday, date) %>%
+  summarize(daily_sales = sum(sales))
+
+ggplot(sales_heatmap, aes(x = weekday, y = date, fill = daily_sales)) +
+  geom_tile() +
+  labs(title = "Heatmap of Daily Sales", x = "Weekday", y = "Date") +
+  theme_minimal()
+
+#Boxplots (Understand sales distribution across months)
+
+ggplot(merged_data, aes(x = month(date, label = TRUE), y = sales)) +
+  geom_boxplot() +
+  labs(title = "Monthly Sales Distribution", x = "Month", y = "Sales") +
+  theme_minimal()

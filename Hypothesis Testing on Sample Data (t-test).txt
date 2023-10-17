@@ -1,0 +1,120 @@
+#One-Sample and Two-Sample Hypothesis Testing (t-testing) to test out hypotheses
+
+# Performed one-sample and two-sample t-tests to validate given
+hypotheses.
+# Concluded and documented the validity of the hypotheses based
+on test outcomes.
+
+
+#R Code:
+
+
+#One Sample T-test
+
+#Null Hypothesis: The average price of wines from the US is equal to the overall average price of wine
+#Alternative Hypothesis:The average price of wines from the US is not equal to the overall average price of wine
+
+# Load the necessary library
+library(tidyverse)
+
+# Load the dataset
+wine_data<-read.csv("winemag-data.csv file-path")
+
+# Filter out rows with NA prices
+wine_data <- wine_data[!is.na(wine_data$price), ]
+
+# Calculate the overall mean price (excluding NAs)
+overall_mean <- mean(wine_data$price, na.rm = TRUE)
+
+# Perform the one-sample t-test
+t_test_result_one_sample <- t.test(wine_data$price[wine_data$country == "US"], mu = overall_mean)
+
+# Print the result
+print(t_test_result_one_sample)
+
+
+
+
+#Two Sample T-test
+
+#Null Hypothesis: The average price of wines from the US is equal to the average price of wines from France.
+#Alternative Hypothesis:The average price of wines from the US is not equal to the average price of wines from France.
+
+# Load the necessary library
+library(tidyverse)
+
+# Load the dataset
+wine_data<-read.csv("/winemag-data.csv file-path")
+
+# Filter out rows with NA prices
+wine_data <- wine_data[!is.na(wine_data$price), ]
+
+# Extract the prices for wines from the US and France
+us_prices <- wine_data$price[wine_data$country == "US"]
+france_prices <- wine_data$price[wine_data$country == "France"]
+
+# Perform the two-sample t-test
+t_test_result_two_sample <- t.test(us_prices, france_prices)
+
+# Print the result
+print(t_test_result_two_sample)
+
+
+***********************************************************************
+
+Output:
+
+1st Output:
+data: wine_data$price[wine_data$country == "US"] t = 10.406, df = 54264, p-value < 2.2e-16 alternative hypothesis: true mean is not equal to 35.36339 95 percent confidence interval: 36.34554 36.80139 sample estimates: mean of x 36.57346
+
+
+Interpretation:
+
+t=10.406
+The t-statistic measures the size of the difference relative to the variation in your sample data. A large t-statistic indicates that the observed difference is not likely due to random chance.
+
+
+Degrees of Freedom:
+df=54264
+This is the number of independent values in the data that can vary without violating any statistical constraint. It often relates to the number of observations in your samples.
+
+
+P-value:
+<2.2e−16
+The p-value is extremely small (much less than 0.05), which indicates strong evidence against the null hypothesis. 
+
+
+95% Confidence Interval:
+[36.34554,36.80139]
+This means we are 95% confident that the true mean price of wines from the US lies within this interval.
+Sample Estimates:
+The estimated mean price of wines from the US in your sample is $36.57346, which is higher than the overall average price of $35.36339.
+
+2nd Output:
+data: us_prices and france_prices t = -8.0753, df = 19368, p-value = 7.123e-16 alternative hypothesis: true difference in means is not equal to 0 95 percent confidence interval: -5.673862 -3.457451 sample estimates: mean of x mean of y 36.57346 41.13912 
+
+Interpretation:
+
+T-Statistic:
+t=−8.0753
+The negative t-statistic indicates that the mean price of wines from the US is lower than the mean price of wines from France in your sample.
+
+
+Degrees of Freedom:
+df=19368
+This value relates to the number of independent observations in the two samples.
+
+
+P-value:
+7.123e−16
+This extremely small p-value (much less than 0.05) indicates strong evidence against the null hypothesis. 
+
+
+95% Confidence Interval:
+[−5.673862,−3.457451]
+This interval represents the estimated difference in means between the two groups. We are 95% confident that the average price of wines from the US is between $3.46 and $5.67 less than the average price of wines from France.
+
+
+Sample Estimates:
+The estimated mean price of wines from the US in your sample is $36.57346, while the estimated mean price of wines from France is $41.13912. The difference is consistent with the t-statistic and the confidence interval.
+

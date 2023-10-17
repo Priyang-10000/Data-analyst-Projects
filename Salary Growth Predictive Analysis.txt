@@ -1,0 +1,70 @@
+Multilinear Regression Model to Predict Employee Salary
+
+# Designed a regression modelto predict employee salary growth.
+# Visualized model outcomes and insights interactively in Tableau.
+
+
+R Code:
+
+#loading the dataset
+
+salary_data<-read.csv("salary.csv file-path")
+
+# Convert categorical columns to factors
+salary_data$rank <- as.factor(salary_data$rank)
+salary_data$discipline <- as.factor(salary_data$discipline)
+salary_data$sex <- as.factor(salary_data$sex)
+ 
+#Splitting data into training and testing sets
+ 
+set.seed(123) # Setting seed for reproducibility
+train_indices <- sample(1:nrow(salary_data), 0.8 * nrow(salary_data))
+training_data <- salary_data[train_indices, ]
+testing_data <- salary_data[-train_indices, ]
+ 
+# Building the multilinear regression model on the training data
+ 
+model <- lm(salary ~ ., data = training_data)
+# Display the model summary
+ 
+summary(model)
+
+# Predict on the testing data
+predictions <- predict(model, newdata = testing_data)
+# Calculate Mean Squared Error (MSE) on the testing data
+mse <- mean((predictions - testing_data$salary)^2)
+print(paste("Mean Squared Error on Testing Data:", mse))
+
+# Create a data frame with original and predicted salaries
+result_df <- data.frame(Original = testing_data$salary, Predicted = predictions)
+
+# Export to CSV
+write.csv(result_df, "original_vs_predicted.csv", row.names = FALSE) #For visualizing in Tableau
+
+# Create a new data frame with the original and predicted values
+> result_df <- data.frame(Original = testing_data$salary, Predicted = predictions)
+> 
+> ggplot(result_df, aes(x = Original, y = Predicted)) +
++     geom_point(aes(color = "Predicted"), alpha = 0.6) +
++     geom_point(aes(x = Original, y = Original, color = "Original"), alpha = 0.6) +
++     geom_smooth(aes(x = Original, y = Original), method = "lm", se = FALSE, color = "red", linetype = "dashed") +
++     scale_color_manual(values = c("Original" = "blue", "Predicted" = "green")) +
++     labs(title = "Original vs. Predicted Salaries",
++          x = "Original Salary",
++          y = "Predicted Salary",
++          color = "Legend") +
++     theme_minimal()
+`geom_smooth()` using formula = 'y ~ x'
+> 
+> 
+> 
+> 
+> # Create scatter plot using base R's plot() function
+> plot(testing_data$salary, predictions, 
++      main="Original vs. Predicted Salaries", 
++      xlab="Original Salary", 
++      ylab="Predicted Salary", 
++      col="blue", pch=16)
+> # Add a line of perfect prediction
+> abline(a=0, b=1, col="red", lwd=2)
+

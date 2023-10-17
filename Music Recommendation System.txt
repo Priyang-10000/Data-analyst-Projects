@@ -1,0 +1,88 @@
+#Music Recommendation System
+
+#Engineered a system that curates a 5-song playlist based on user's work schedule and daily weather data by utilizing logic statements and function mapping for tailored recommendations
+
+#R Code:
+
+music_data<-read.csv("MusicData.csv file-path")
+
+time_table<-read.csv("TimeTable.csv file-path")
+
+weather_data<-read.csv("WeatherData.csv file-path")
+
+list(music_head = head(music_data), time_table_head = head(time_table), weather_head = head(weather_data))
+
+
+
+
+# Load necessary libraries
+
+library(dplyr)
+
+# Read the datasets
+
+music_data<-read.csv("MusicData.csv file-path")
+
+time_table<-read.csv("TimeTable.csv file-path")
+
+weather_data<-read.csv("WeatherData.csv file-path")
+
+# Convert the Date columns to Date class in R for consistency
+
+weather_data$Date <- as.Date(weather_data$Date, format="%m/%d/%Y")
+time_table$Date <- as.Date(time_table$Date, format="%m/%d/%Y")
+
+# Categorize weather based on Precipitation Probability
+weather_data$Weather_Category <- ifelse(weather_data$Precipitation_Probability <= 0.25, "Sunny", "Not Sunny")
+
+# Function to recommend songs
+
+recommend_songs <- function(weather_category) {
+  if (weather_category == "Sunny") {
+    primary_genres <- c("Pop", "Rock")
+    secondary_genres <- c("Hip-hop/Rap", "R&B")
+  } else {
+    primary_genres <- c("Hip-hop/Rap", "R&B")
+    secondary_genres <- c("Pop", "Rock")
+  }
+  
+ # Extract songs from primary and secondary genres
+  
+primary_songs <- music_data[music_data$Genre %in% primary_genres,]
+secondary_songs <- music_data[music_data$Genre %in% secondary_genres,]
+  
+ # Recommend songs (3 from primary and 2 from secondary genres)
+  
+recommended_primary <- primary_songs[sample(nrow(primary_songs), 3),]
+recommended_secondary <- secondary_songs[sample(nrow(secondary_songs), 2),]
+  
+  # Combine the recommendations
+  rbind(recommended_primary, recommended_secondary)
+}
+
+# Function to recommend songs for each day and interval in the timetable
+recommend_songs_for_timetable <- function(weather_data, time_table, music_data) {
+  recommendations_list <- list()
+  for (i in 1:nrow(time_table)) {
+    day <- time_table$Day[i]
+    weather_date <- time_table$Date[i]
+    weather_category <- weather_data$Weather_Category[weather_data$Date == weather_date]
+    if (length(weather_category) == 0) { next }
+    recommendations_list[[day]] <- list(
+      before_class1 = recommend_songs(weather_category),
+      after_class1 = recommend_songs(weather_category),
+      before_class2 = recommend_songs(weather_category),
+      after_class2 = recommend_songs(weather_category),
+      before_lunch = recommend_songs(weather_category),
+      after_lunch = recommend_songs(weather_category),
+      before_class3 = recommend_songs(weather_category),
+      after_class3 = recommend_songs(weather_category)
+    )
+  }
+  return(recommendations_list)
+}
+
+# Execute the function and store the results
+song_recommendations_for_timetable <- recommend_songs_for_timetable(weather_data, time_table, music_data)
+song_recommendations_for_timetable$Monday
+

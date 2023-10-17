@@ -1,0 +1,46 @@
+#Customer Segmentation (k-means clustering)
+
+# Implemented k-means clustering to segregate customers into
+distinct groups.
+# Analyzed and provided business insights based on the
+segmentation results.
+
+
+# Load necessary libraries
+library(dplyr)
+
+# 1. Data Loading and Pre-processing
+
+# Import the dataset
+data <- read.csv("Mall_Customers.csv file-path")
+
+# Convert 'Gender' column to numeric: 0 for Female, 1 for Male
+data$Gender <- as.numeric(factor(data$Gender, levels = c("Female", "Male"))) - 1
+
+# Normalize the data (excluding 'CustomerID' column)
+normalized_data <- as.data.frame(scale(data[,3:5]))
+
+# 2. Elbow Method for Optimal Clusters
+
+wcss <- vector()
+for (k in 1:10) {
+  kmeans_result <- kmeans(normalized_data, centers=k)
+  wcss[k] <- kmeans_result$tot.withinss
+}
+plot(1:10, wcss, type="b", main="Elbow Method", xlab="Number of clusters", ylab="WCSS")
+
+# 3. K-means Clustering
+
+k_optimal <- 5  # Assuming 5 clusters based on elbow method, adjust if needed
+kmeans_result <- kmeans(normalized_data, centers=k_optimal)
+data$cluster <- kmeans_result$cluster
+
+# 4. Cluster Profiling
+
+cluster_profiles <- data %>%
+  group_by(cluster) %>%
+  summarise_all(mean, na.rm = TRUE)
+
+print(cluster_profiles)
+
+
